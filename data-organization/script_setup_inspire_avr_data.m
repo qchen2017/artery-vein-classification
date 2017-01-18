@@ -16,7 +16,7 @@ mkdir(fullfile(output_folder, 'tmp'));
 %% prepare the input data set
 
 % prepare ZIP filename
-zip_filename = fullfile(input_folder_for_image, 'INSPIRE-AVR.zip');
+zip_filename = fullfile(input_folder, 'INSPIRE-AVR.zip');
 
 % check if the file exists
 if exist(zip_filename, 'file') ~= 0
