@@ -1,5 +1,5 @@
 
-function [Gout, Gmatlab] = initializeGraphFromSkel_new(skel)
+function [Gout] = initializeGraphFromSkel_new(skel)
 
 
     THR = 0;
@@ -19,13 +19,6 @@ function [Gout, Gmatlab] = initializeGraphFromSkel_new(skel)
 
     % Remove junctions
     skel_without_junctions = skel .* imcomplement(dilated_branching_points);
-
-    % identify branching points and crossings as nodes
-    painted_nodes = bwlabel(identified_junctions);
-    % identify each segment as link
-    painted_links = bwlabel(skel_without_junctions);
-    % mark nodes in the original skeleton
-    skel_with_marked_junctions = double(skel) + painted_nodes;
 
     
     
