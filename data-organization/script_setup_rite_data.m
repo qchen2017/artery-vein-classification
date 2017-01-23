@@ -45,9 +45,10 @@ for subs_ = 1 : length(subsets)
     rite_dataset_folder = fullfile(output_folder, strcat('RITE-', current_set));
     mkdir(rite_dataset_folder);
     mkdir(fullfile(rite_dataset_folder, 'images'));
+    mkdir(fullfile(rite_dataset_folder, 'labels'));
+    mkdir(fullfile(rite_dataset_folder, 'vessel-segmentations'));
     mkdir(fullfile(rite_dataset_folder, 'veins'));
     mkdir(fullfile(rite_dataset_folder, 'arteries'));
-    mkdir(fullfile(rite_dataset_folder, 'labels'));
 
     % retrieve image names
     image_filenames = dir(fullfile(input_folder_for_images, '*.tif'));
@@ -69,6 +70,8 @@ for subs_ = 1 : length(subsets)
         imwrite(labels(:,:,3)==255 .* labels(:,:,1)==0, fullfile(rite_dataset_folder, 'veins', labels_filenames{i}));
         % identify arteries and save
         imwrite(labels(:,:,1)==255 .* labels(:,:,3)==0, fullfile(rite_dataset_folder, 'arteries', labels_filenames{i}));
+        % identify vessels and save
+        imwrite(sum(labels,3) > 0, fullfile(rite_dataset_folder, 'vessel-segmentations', labels_filenames{i}));
 
     end
 

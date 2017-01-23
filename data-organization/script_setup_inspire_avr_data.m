@@ -71,7 +71,7 @@ for i = 1 : length(image_filenames)
     % copy current image
     copyfile(fullfile(input_folder_for_images, image_filenames{i}), fullfile(inspire_dataset_folder, 'images', image_filenames{i}));
     % copy all the annotations
-    copyfile(fullfile(input_folder_for_labels, labels_filenames{i}), fullfile(inspire_dataset_folder, 'labels', labels_filenames{i}));
+    copyfile(fullfile(input_folder_for_labels, labels_filenames{i}), fullfile(inspire_dataset_folder, 'full-labels', labels_filenames{i}));
     % open label
     labels = imread(fullfile(input_folder_for_labels, labels_filenames{i}));
     % identify veins and save
