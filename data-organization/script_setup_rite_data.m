@@ -62,16 +62,28 @@ for subs_ = 1 : length(subsets)
 
         % copy current image
         copyfile(fullfile(input_folder_for_images, image_filenames{i}), fullfile(rite_dataset_folder, 'images', image_filenames{i}));
-        % copy all the annotations
-        copyfile(fullfile(input_folder_for_labels, labels_filenames{i}), fullfile(rite_dataset_folder, 'labels', labels_filenames{i}));
+        
         % open label
-        labels = imread(fullfile(input_folder_for_labels, labels_filenames{i}));
+        im_labels = imread(fullfile(input_folder_for_labels, labels_filenames{i}));
+        
+        % identify labels of arteries, veins and unknown regions
+        arteries = logical((im_labels(:,:,3) == 255) .* (im_labels(:,:,1) == 0));
+        veins = logical((im_labels(:,:,1) == 255) .* (im_labels(:,:,3) == 0));
+        unknown = logical((im_labels(:,:,3) == 255) .* (im_labels(:,:,1) == 255));
+        % prepare matrix of labels
+        labels = zeros(size(im_labels(:,:,1)));
+        labels(arteries) = 1;
+        labels(veins) = -1;
+        labels(unknown) = 2;
+        % save if as a mat file
+        save(fullfile(rite_dataset_folder, 'labels', strcat(labels_filenames{i}, '.mat')),'labels');
+
         % identify veins and save
-        imwrite(labels(:,:,3)==255 .* labels(:,:,1)==0, fullfile(rite_dataset_folder, 'veins', labels_filenames{i}));
+        imwrite(im_labels(:,:,3)==255, fullfile(rite_dataset_folder, 'veins', labels_filenames{i}));
         % identify arteries and save
-        imwrite(labels(:,:,1)==255 .* labels(:,:,3)==0, fullfile(rite_dataset_folder, 'arteries', labels_filenames{i}));
+        imwrite(im_labels(:,:,1)==255, fullfile(rite_dataset_folder, 'arteries', labels_filenames{i}));
         % identify vessels and save
-        imwrite(sum(labels,3) > 0, fullfile(rite_dataset_folder, 'vessel-segmentations', labels_filenames{i}));
+        imwrite(sum(im_labels,3) > 0, fullfile(rite_dataset_folder, 'vessel-segmentations', labels_filenames{i}));
 
     end
 
