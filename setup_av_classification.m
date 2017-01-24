@@ -23,5 +23,10 @@ addpath(genpath(fullfile(my_root_position, 'fundus-util'))) ;
 addpath(genpath(fullfile(my_root_position, 'configuration'))) ;
 addpath(genpath(fullfile(my_root_position, 'core'))) ;
 
+% compile maxflow code
+cd('./core/crf/maxflow/');
+make;
+cd(my_root_position);
+
 clear
 clc
