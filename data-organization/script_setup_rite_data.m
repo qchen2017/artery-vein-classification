@@ -69,7 +69,7 @@ for subs_ = 1 : length(subsets)
         % identify labels of arteries, veins and unknown regions
         arteries = logical((im_labels(:,:,3) == 255) .* (im_labels(:,:,1) == 0));
         veins = logical((im_labels(:,:,1) == 255) .* (im_labels(:,:,3) == 0));
-        unknown = logical((im_labels(:,:,3) == 255) .* (im_labels(:,:,1) == 255));
+        unknown = logical((im_labels(:,:,2) == 255));
         % prepare matrix of labels
         labels = zeros(size(im_labels(:,:,1)));
         labels(arteries) = 1;
