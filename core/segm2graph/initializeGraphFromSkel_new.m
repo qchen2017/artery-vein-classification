@@ -1,8 +1,6 @@
 
 function [Gout] = initializeGraphFromSkel_new(skel)
 
-
-    THR = 0;
     % Compute the intersecting pts
     intersecting_pts = find_skel_intersection(skel);
 
@@ -133,7 +131,7 @@ function [Gout] = initializeGraphFromSkel_new(skel)
                     pixel_labels(edge(end))=0;
                 end; 
                 % only large branches or non-loops
-                if((end_node_idx<0 && length(edge)>THR) || (i~=end_node_idx && end_node_idx>0))
+                if((end_node_idx<0 && length(edge)>1) || (i~=end_node_idx && end_node_idx>0))
                     % encode link information
                     link(last_link_idx).n1 = i;
                     link(last_link_idx).n2 = end_node_idx; % node number

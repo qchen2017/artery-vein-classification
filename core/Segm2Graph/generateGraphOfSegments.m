@@ -10,14 +10,18 @@ function [Gout] = generateGraphOfSegments(Gin)
         %   |--> conn: nodes connected to it
         %   |--> numLinks: length(links)
         %   |--> original_segment_id: original name of the segment
-        %   |--> features: feature vector
+        %   |--> features: unary feature vector
+        %   |--> comx: average coordinate in the X axis
+        %   |--> comy: average coordinate in the Y axis
     Gout.node(length(Gin.link)) = struct( ...
         'idx', [], ...
         'links', [], ...
         'conn', [], ...
         'numLinks', 0, ...
         'original_segment_id', -1, ...
-        'features', [] ...
+        'features', [], ...
+        'comx', -1, ...
+        'comy', -1 ...
         );
     
     % link structure:
@@ -26,11 +30,18 @@ function [Gout] = generateGraphOfSegments(Gin)
     %  |--> n2: the other segment connected with this node
     %  |--> point: node pixels
     %  |--> original_node_id = original name of the node
+    %  |--> features: pairwise feature vector
+    %  |--> comx: average coordinate in the X axis
+    %  |--> comy: average coordinate in the Y axis
     Gout.link(1) = struct( ...
         'n1', -1, ...
         'n2', -1, ...
         'point', [], ...
-        'original_node_id', -1);
+        'original_node_id', -1, ...
+        'features', [], ...
+        'comx', -1, ...
+        'comy', -1 ...
+        );
     
    
     
@@ -43,6 +54,14 @@ function [Gout] = generateGraphOfSegments(Gin)
         node.numLinks = 0;
         node.original_segment_id = link_id;
         node.features = [];
+        
+        % Take the mean coordinate
+        coord = zeros(length(node.idx), 2);
+        [coord(:,1), coord(:,2)] = ind2sub([Gin.w Gin.l], node.idx);
+        coord = mean(coord);
+        % Assign to the new node
+        node.comx = coord(2);
+        node.comy = coord(1);
         
         % Assign the node to its corresponding position in Gout
         Gout.node(link_id) = node;
@@ -69,6 +88,9 @@ function [Gout] = generateGraphOfSegments(Gin)
             new_link.n2 = current_node.links(2);
             new_link.point = current_node.idx;
             new_link.original_node_id = node_gin_id;
+            new_link.features = [];
+            new_link.comx = current_node.comx;
+            new_link.comy = current_node.comy;
             
             % add the new link and update the nodes
             Gout = add_new_link(Gout, new_link, new_link_alias);
@@ -89,6 +111,9 @@ function [Gout] = generateGraphOfSegments(Gin)
                     new_link.n2 = current_node.links(j);
                     new_link.point = current_node.idx;
                     new_link.original_node_id = node_gin_id;
+                    new_link.features = [];
+                    new_link.comx = current_node.comx;
+                    new_link.comy = current_node.comy;
                     
                     % add the new link and update the nodes
                     Gout = add_new_link(Gout, new_link, new_link_alias);
