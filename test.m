@@ -34,3 +34,9 @@ skel = bwmorph(segm, 'skel', Inf);
 
 % Assign labels to the graph
 [Gout] = assign_labels(Gout, labels);
+
+%% Output a labeled graph
+
+% Retrieve labeled graph
+[labeled_map] = generate_image_from_classified_graph(Gout);
+figure, imshow(labeled_map);

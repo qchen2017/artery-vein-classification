@@ -1,6 +1,9 @@
 
 function [Gout] = assign_labels(Gout, labels)
 
+    % initialize an array of unknown labels
+    %unknown_nodes = zeros(length(Gout.node), 1);
+
     % assign labels to each node
     for i = 1 : length(Gout.node)
         

@@ -2,6 +2,9 @@
 function [Gout] = generateGraphOfSegments(Gin)
 
     % Initialize the new graph...
+    Gout.w = Gin.w;
+    Gout.l = Gin.l;
+    
     
     % node structure:
         %   |
