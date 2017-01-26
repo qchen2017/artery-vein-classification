@@ -22,6 +22,7 @@ addpath(genpath(fullfile(my_root_position, 'data-organization'))) ;
 addpath(genpath(fullfile(my_root_position, 'fundus-util'))) ;
 addpath(genpath(fullfile(my_root_position, 'configuration'))) ;
 addpath(genpath(fullfile(my_root_position, 'core'))) ;
+addpath(genpath(fullfile(my_root_position, 'experiments'))) ;
 
 % compile maxflow code
 cd('./core/crf/maxflow/');

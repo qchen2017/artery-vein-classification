@@ -47,7 +47,12 @@ fprintf('Printing the graph but with ground truth labels...\n');
 
 % Retrieve labeled graph
 [labeled_map] = generate_image_from_classified_graph(Gout);
-figure, imshow(labeled_map);
+%figure, imshow(labeled_map);
+
+%% Simulate learning
+
+[model] = learn_artery_vein_classifier({Gout}, 1);
+
 
 %% Let's give a try on using the CRF unsupervisedly
 fprintf('Applying a CRF...\n');

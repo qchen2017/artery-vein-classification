@@ -29,7 +29,7 @@ function [I] = generate_image_from_classified_graph(Gout)
                 I(:,:,2) = green;
                 I(:,:,3) = blue;
                 
-            case 2    % unknown
+            case 0    % unknown
                 red = I(:,:,1);
                 red(current_node.idx) = 0;
                 blue = I(:,:,3);

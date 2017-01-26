@@ -56,5 +56,8 @@ function [Gout] = compute_pairwise_features(Gout, segm)
         Gout.link(i).features = [ Gout.link(i).features, 180 - abs(acosd(segment_1 * segment_2')) ];
         
     end
+     
+    % Also include the dimensionality of the feature vector
+    Gout.properties.pairwise_dim = length(Gout.link(1).features);
 
 end

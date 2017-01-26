@@ -49,6 +49,9 @@ function [Gout] = compute_unary_features(Gout, RGB)
         
     end
     
+    % Also include the dimensionality of the feature vector
+    Gout.properties.unary_dim = length(current_node_unary_features);
+    
 end
 
 
@@ -56,5 +59,5 @@ function current_band = normalize_intensities(current_band)
     % turn the image into doubles
     current_band = im2double(current_band);
     % and now standardize
-    current_band = (current_band - mean(current_band(:))) / std(current_band(:));
+    %current_band = (current_band - mean(current_band(:))) / std(current_band(:));
 end
