@@ -102,12 +102,15 @@ function [Gout] = initializeGraphFromSkel_new(skel)
     last_node_idx = length(node);
     % for each node
     for i=1:length(node)
-
+        %if i==151
+        %    disp('A');
+        %end
         % find all the neighbors indices of all the pixels in the node
         link_idx = find(ismember(nhi(:,5),node(i).idx));
 
         % for each canal pixel element on the nbh of the node pixels
         for j=1:length(link_idx)
+            %j
             % visit all pixel of this node
 
             % all potential unvisited links emanating from this pixel:
@@ -120,10 +123,11 @@ function [Gout] = initializeGraphFromSkel_new(skel)
 
             % for each pixel candidate
             for k=1:length(link_cands)
+                %k
                 % follow the link and obtain
                 % - edge: list of pixels of the edge
                 % - end_node_idx: id of the last node (-1 if it terminates without reaching a node)
-                [edge,end_node_idx] = pk_follow_link(pixel_labels,node,i,j,link_cands(k),canal_pixels);
+                [edge, end_node_idx] = pk_follow_link(pixel_labels, node, i, j, link_cands(k), canal_pixels);
                    
                 % remove from skel2 the entire edge (marking as visited)
                 pixel_labels(edge(2:end-1))=0;
@@ -224,7 +228,7 @@ function nhoods = pk_get_nh_idx(skel,foregroundPixels)
 end
 
 
-function [edge,end_node_idx] = pk_follow_link(pixel_labels,nodesStructure,sourceNode,firstPixel,canalCand,cans)
+function [edge, end_node_idx] = pk_follow_link(pixel_labels, nodesStructure, sourceNode, firstPixel, canalCand, cans)
 % pk_follow_link
 
     edge = [];
@@ -245,7 +249,7 @@ function [edge,end_node_idx] = pk_follow_link(pixel_labels,nodesStructure,source
             nextCand = cans(current,2);
             %if it goes back or any of the next candidate neighbors already
             %is in the edge
-            if ((nextCand==edge(i-1)))
+            if nextCand==edge(i-1)      % <----------- EL PROBLEMA ANDA POR AC?
                % switch direction to avoid loops
                nextCand = cans(current,3);
             end;
@@ -262,9 +266,15 @@ function [edge,end_node_idx] = pk_follow_link(pixel_labels,nodesStructure,source
                     end_node_idx = pixel_labels(nextCand)-1; % node #
                     isdone = 1;
                 else
-                    % if it is not a node, then continue 
-                    edge(i) = canalCand;
-                    canalCand = nextCand;
+                    if ~isempty(find(nextCand==edge)) % <----------- EL PROBLEMA ANDA POR AC?
+                        edge(i) = canalCand;
+                        end_node_idx = -1;
+                        isdone = 1;
+                    else
+                        % then is not a node and is not in one of our cicles, then continue 
+                        edge(i) = canalCand;
+                        canalCand = nextCand;
+                    end
                 end;
             end
         else
