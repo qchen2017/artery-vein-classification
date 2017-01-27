@@ -1,3 +1,6 @@
 [submodule "fundus-util"]
 	path = fundus-util
 	url = https://github.com/ignaciorlando/fundus-util.git
+[submodule "external/svm-struct-matlab"]
+	path = external/svm-struct-matlab
+	url = https://github.com/vedaldi/svm-struct-matlab.git

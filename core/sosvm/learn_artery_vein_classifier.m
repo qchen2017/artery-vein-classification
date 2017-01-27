@@ -45,8 +45,9 @@ function [model, performance_on_validation] = learn_artery_vein_classifier(train
     [performance_on_validation, idx] = max(accuracies_on_validation);
     
     % plot the evolution of C values
-    figure, plot(C_space, performance_on_validation, 'LineWidth', 2);
-    xlabel('$C$ values', 'Interpreter', 'LaTex');
+    figure, plot(log10(C_space), accuracies_on_validation, 'LineWidth', 2);
+    ylim = [0 1];
+    xlabel('$i = \log_{10}(C)$ values', 'Interpreter', 'LaTex');
     ylabel('Accuracy', 'Interpreter', 'LaTex');
     box on;
     grid on;
@@ -84,7 +85,7 @@ function [model] = learn_artery_vein_classifier_for_a_given_c(graphs, C, n)
     % -----------------------------------------------
     
     % Learn the CRF using SOSVM
-    [model, config, state] = sosvmCallback(config, graphs);
+    [model, config] = sosvmCallback(config, graphs);
     
     % Assign the configuration to the model
     model.config = config;

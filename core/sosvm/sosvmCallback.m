@@ -1,5 +1,5 @@
 
-function [model, config, state] = sosvmCallback(config, training_data)
+function [model, config] = sosvmCallback(config, training_data)
 % sosvmCallback Configure the SOSVM and call it to learn the model
 % [model, config, state] = sosvmCallback(config, trainingdata)
 % OUTPUT: model: learned model
@@ -9,9 +9,9 @@ function [model, config, state] = sosvmCallback(config, training_data)
 %        trainingdata: training data (is a cell array of graphs)
     
     % Assign functions
-    config.findMostViolatedMarginFn = @findMostViolatedConstraint;
-    config.lossFn = @lossComputing;
-    config.psiFn = @featureComputing;
+    %config.findMostViolatedMarginFn = @findMostViolatedConstraint;
+    %config.lossFn = @lossComputing;
+    %config.psiFn = @featureComputing;
     
     % % Normalize the value of C by the number of pixels
     %config.C = config.C / something; % We need to do this because of our SOSVM implementation
@@ -22,7 +22,16 @@ function [model, config, state] = sosvmCallback(config, training_data)
     fprintf('Training data encoded\n');
     
     % Train the SOSVM
-    [model, config, state] = sosvm2(config, patterns, labels);
+    %[model, config, state] = sosvm2(config, patterns, labels);
+    
+    config.patterns = patterns;
+    config.labels = labels;
+    config.lossFn = @lossComputing;
+    config.constraintFn = @findMostViolatedConstraint;
+    config.featureFn = @featureComputing;
+    config.dimension = config.sizePsi;
+    args = [' -c ', num2str(single(config.C / config.n)), ' -o 2 -v 1 -w 4'] ;
+    model = svm_struct_learn(args, config) ;
     
 end
 

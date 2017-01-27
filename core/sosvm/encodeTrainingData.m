@@ -30,7 +30,7 @@ function [unary_features, labels] = encode_unary_features_and_labels(Gout)
     
     % Our matrix of unary features will have the size of the number of
     % features x number of segments (nodes)
-    unary_features = ones(length(Gout.node), Gout.properties.unary_dim + 1) * 2000000;
+    unary_features = ones(length(Gout.node), Gout.properties.unary_dim + 1) * 1;
 
     % Initialize the array of labels
     labels = zeros(length(Gout.node), 1);
@@ -63,19 +63,17 @@ function [pairwise_features, pairwise_idx] = encode_pairwise_features(Gout)
     pairwise_idx = zeros(length(Gout.node), length(Gout.node));
     
     % For each link in the graph
-    %for i = 1 : length(Gout.link)
+    for i = 1 : length(Gout.link)
         
-        % Assign features
-    %    pairwise_features(Gout.link(i).n1, Gout.link(i).n2, :) = Gout.link(i).features;
-    %    pairwise_features(Gout.link(i).n2, Gout.link(i).n1, :) = Gout.link(i).features;
+       % Assign features
+       pairwise_features(Gout.link(i).n1, Gout.link(i).n2, :) = Gout.link(i).features;
+       pairwise_features(Gout.link(i).n2, Gout.link(i).n1, :) = Gout.link(i).features;
         
-        % Copy the idx of the link
-    %    pairwise_idx(Gout.link(i).n1, Gout.link(i).n2) = i;
-    %    pairwise_idx(Gout.link(i).n2, Gout.link(i).n1) = i;
+       % Copy the idx of the link
+       pairwise_idx(Gout.link(i).n1, Gout.link(i).n2) = i;
+       pairwise_idx(Gout.link(i).n2, Gout.link(i).n1) = i;
         
-    %end
-    
-    
+    end
 
 end
 
