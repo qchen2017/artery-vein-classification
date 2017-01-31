@@ -36,6 +36,7 @@ function [Gout] = generateGraphOfSegments(Gin)
     %  |--> features: pairwise feature vector
     %  |--> comx: average coordinate in the X axis
     %  |--> comy: average coordinate in the Y axis
+    %  |--> is_branching_point: true/false if is a branching point or not
     Gout.link(1) = struct( ...
         'n1', -1, ...
         'n2', -1, ...
@@ -43,7 +44,8 @@ function [Gout] = generateGraphOfSegments(Gin)
         'original_node_id', -1, ...
         'features', [], ...
         'comx', -1, ...
-        'comy', -1 ...
+        'comy', -1, ...
+        'is_branching_point', 0 ...
         );
     
    
@@ -94,6 +96,7 @@ function [Gout] = generateGraphOfSegments(Gin)
             new_link.features = [];
             new_link.comx = current_node.comx;
             new_link.comy = current_node.comy;
+            new_link.is_branching_point = true;
             
             % add the new link and update the nodes
             Gout = add_new_link(Gout, new_link, new_link_alias);
@@ -117,6 +120,7 @@ function [Gout] = generateGraphOfSegments(Gin)
                     new_link.features = [];
                     new_link.comx = current_node.comx;
                     new_link.comy = current_node.comy;
+                    new_link.is_branching_point = is_a_branching_point(current_node);
                     
                     % add the new link and update the nodes
                     Gout = add_new_link(Gout, new_link, new_link_alias);

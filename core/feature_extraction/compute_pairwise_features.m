@@ -3,9 +3,9 @@ function [Gout] = compute_pairwise_features(Gout, segm)
 
     % PAIRWISE FEATURES
     
-    % --------------------------------------
-    
-    % 1. Mean vessel calibre
+    % ---------------------------------------------------------------------
+    % Compute vessel calibers
+    % ---------------------------------------------------------------------
 
     % we use bwdist on the complement of the vessel segmentation 
     % to aproximate the vessel diameter.
@@ -21,23 +21,28 @@ function [Gout] = compute_pairwise_features(Gout, segm)
         vessel_calibres(i) = mean(vessel_calibres_map(Gout.node(i).idx));
     end
     
-    % lets use the calibres now
+    % lets compute the differences in vessel calibres
+    difference_in_vessel_calibres = zeros(length(Gout.link), 1);
+    % estimate the difference in vessel calibres
     for i = 1 : length(Gout.link)
-        % we compute the squared difference on the calibres as a pairwise
-        % feature
-        Gout.link(i).features = (vessel_calibres(Gout.link(i).n1) - vessel_calibres(Gout.link(i).n2))^2;
+        difference_in_vessel_calibres(i) = ...
+            abs(vessel_calibres(Gout.link(i).n1) - vessel_calibres(Gout.link(i).n2)) / ...
+                max(vessel_calibres(Gout.link(i).n1), vessel_calibres(Gout.link(i).n2));
     end
     
-    % --------------------------------------
+    % ---------------------------------------------------------------------
+    % Compute vessel calibers
+    % ---------------------------------------------------------------------
     
-    % 2. Bifurcation angles
+    % initialize the array of differences in angles
+    difference_in_angles = zeros(length(Gout.link), 1);
     
     % for each link in our new graph of segments
     for i = 1 : length(Gout.link)
         
         % Get points of each segment
-        segment_1 = [ Gout.node(Gout.link(i).n1).comx, Gout.node(Gout.link(i).n1).comy ];
-        segment_2 = [ Gout.node(Gout.link(i).n2).comx, Gout.node(Gout.link(i).n2).comy ];
+        segment_1 = get_last_pixels(Gout, Gout.node(Gout.link(i).n1), Gout.link(i));
+        segment_2 = get_last_pixels(Gout, Gout.node(Gout.link(i).n2), Gout.link(i));
         % Normalize them by their norm
         segment_1 = segment_1 / norm(segment_1);
         segment_2 = segment_2 / norm(segment_2);
@@ -53,11 +58,80 @@ function [Gout] = compute_pairwise_features(Gout, segm)
         segment_2 = segment_2 - point_coordinate;
         
         % and now take the angle between them
-        Gout.link(i).features = [ Gout.link(i).features, 180 - abs(acosd(segment_1 * segment_2')) ];
+        difference_in_angles(i) = (180 - abs(acosd(segment_1 * segment_2'))) / 180;
         
     end
-     
+    
+    
+    % ---------------------------------------------------------------------
+    % Assign vessel calibres and angles
+    % ---------------------------------------------------------------------
+    
+    % For each link in the graph
+    for i = 1 : length(Gout.link)
+        
+        % Initialize current feature vector
+        current_features = zeros(3, 1);
+        
+        % Determine if it corresponds to a crossing or a branching point
+        if Gout.link(i).is_branching_point
+            
+            % Assign a 1 in the first coordinate because is a branching point
+            current_features(1) = 1;
+            % and 0 if it is not a crossing
+            current_features(2) = 0;
+            current_features(3) = 0;
+            
+        else
+            
+            % Assign a 0 because is a crossing
+            current_features(1) = 0;
+            % Assign the difference in vessel calibres
+            current_features(2) = difference_in_vessel_calibres(i);
+            % Assign the difference in angles
+            current_features(3) = difference_in_angles(i);
+            
+        end
+        
+        % Assign current features
+        Gout.link(i).features = current_features;
+        
+    end
+    
     % Also include the dimensionality of the feature vector
     Gout.properties.pairwise_dim = length(Gout.link(1).features);
+
+end
+
+
+function last_pxs = get_last_pixels(Gout, node, link)
+
+    % Check if the length of the segment is smaller than 10
+    if length(node.idx) > 10
+
+        % Get (x,y) coordinates of the segment
+        segment_pxs = zeros(length(node.idx), 2);
+        [segment_pxs(:,1), segment_pxs(:,2)] = ind2sub([Gout.w Gout.l], node.idx);
+
+        % Estimate the distance with respect to current node
+        distances = bsxfun(@minus, segment_pxs, [link.comx, link.comy]);
+        % Take the Euclidean distance
+        distances = sqrt(distances(:,1).^2 + distances(:,2).^2);
+        % Identify the smallest value
+        [~, idx] = min(distances);
+    
+        % Get the mean coordinate
+        if idx==1
+            last_pxs = mean(segment_pxs(idx:10, :));
+        else
+            last_pxs = mean(segment_pxs(end-10:end, :));
+        end
+        
+    else
+        
+        % Get last pxs
+        last_pxs = [link.comx, link.comy];
+        
+    end
 
 end

@@ -13,15 +13,13 @@ function performance = evaluate_artery_vein_classification_performance(classifie
             % for each node
             for i = 1 : length(classified_graph.node)
                 % sum TP + TN when the label is accurate
-                if ((classified_graph.node(i).label ~= -1) && (ground_truth_graph.node(i).label ~= -1)) ...
-                        || ((classified_graph.node(i).label ~= 1) && (ground_truth_graph.node(i).label ~= 1))
+                if classified_graph.node(i).label == ground_truth_graph.node(i).label
                     performance = performance + 1;
                 end
             end
             % divide performance by the number of nodes
-            performance = performance / length(classified_graph.node);
+            %performance = performance;
             
     end
     
-
 end

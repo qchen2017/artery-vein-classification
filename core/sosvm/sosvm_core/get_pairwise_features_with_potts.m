@@ -21,7 +21,7 @@ function phi_p = get_pairwise_features_with_potts(pattern, label)
             % if both extremes of the link has different labels
             phi_p(n1, pf) = (label(n1) ~= label(n2)) ... % potts term
                 * pairwise_features(n1,n2,pf);
-            phi_p(n2, pf) = phi_p(n1, pf);
+            %phi_p(n2, pf) = phi_p(n1, pf);
 
         end
         
