@@ -38,11 +38,9 @@ function [yhat] = constraintCB(config, model, X, Y)
     unary_potentials = zeros(size(unary_features, 2), 2);
     
     % scores for veins
-    unary_potentials(:,1) = (- w_unary(1, :) * unary_features(:,:,1))' - penalization_for_veins; % veins
-    %unary_potentials(:,1) = (w_unary(1, :) * unary_features(:,:,1))' + penalization_for_veins; % veins
+    unary_potentials(:,1) = (w_unary(1, :) * unary_features(:,:,1))' - penalization_for_veins; % veins
     % scores for arteries
-    unary_potentials(:,2) = (- w_unary(2, :) * unary_features(:,:,2))' - penalization_for_arteries; % arteries    
-    %unary_potentials(:,2) = (w_unary(2, :) * unary_features(:,:,2))' + penalization_for_arteries; % arteries    
+    unary_potentials(:,2) = (w_unary(2, :) * unary_features(:,:,2))' - penalization_for_arteries; % arteries    
 
     % retrieve the number of elements
     N = size(pairwise_features, 1);

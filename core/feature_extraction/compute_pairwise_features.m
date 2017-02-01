@@ -4,7 +4,7 @@ function [Gout] = compute_pairwise_features(Gout, segm)
     % PAIRWISE FEATURES
     
     % ---------------------------------------------------------------------
-    % Compute vessel calibers
+    % Compute differences in vessel calibers
     % ---------------------------------------------------------------------
 
     % we use bwdist on the complement of the vessel segmentation 
@@ -31,7 +31,7 @@ function [Gout] = compute_pairwise_features(Gout, segm)
     end
     
     % ---------------------------------------------------------------------
-    % Compute vessel calibers
+    % Compute angles
     % ---------------------------------------------------------------------
     
     % initialize the array of differences in angles
@@ -44,21 +44,21 @@ function [Gout] = compute_pairwise_features(Gout, segm)
         segment_1 = get_last_pixels(Gout, Gout.node(Gout.link(i).n1), Gout.link(i));
         segment_2 = get_last_pixels(Gout, Gout.node(Gout.link(i).n2), Gout.link(i));
         % Normalize them by their norm
-        segment_1 = segment_1 / norm(segment_1);
-        segment_2 = segment_2 / norm(segment_2);
+        segment_1 = segment_1;% / norm(segment_1);
+        segment_2 = segment_2;% / norm(segment_2);
         
         % Identify the central point of the branching point / vessel
         % crossing
         point_coordinate = [ Gout.link(i).comx Gout.link(i).comy ];
         % Normalize it by its norm
-        point_coordinate = point_coordinate / norm(point_coordinate);
+        point_coordinate = point_coordinate;% / norm(point_coordinate);
         
         % Move the segments to the origin
         segment_1 = segment_1 - point_coordinate;
         segment_2 = segment_2 - point_coordinate;
         
         % and now take the angle between them
-        difference_in_angles(i) = (180 - abs(acosd(segment_1 * segment_2'))) / 180;
+        difference_in_angles(i) = abs(segment_1 * segment_2') / (norm(segment_1) * norm(segment_2));
         
     end
     
@@ -108,30 +108,27 @@ function last_pxs = get_last_pixels(Gout, node, link)
 
     % Check if the length of the segment is smaller than 10
     if length(node.idx) > 10
-
-        % Get (x,y) coordinates of the segment
-        segment_pxs = zeros(length(node.idx), 2);
-        [segment_pxs(:,1), segment_pxs(:,2)] = ind2sub([Gout.w Gout.l], node.idx);
-
-        % Estimate the distance with respect to current node
-        distances = bsxfun(@minus, segment_pxs, [link.comx, link.comy]);
-        % Take the Euclidean distance
-        distances = sqrt(distances(:,1).^2 + distances(:,2).^2);
-        % Identify the smallest value
-        [~, idx] = min(distances);
-    
-        % Get the mean coordinate
-        if idx==1
-            last_pxs = mean(segment_pxs(idx:10, :));
-        else
-            last_pxs = mean(segment_pxs(end-10:end, :));
-        end
-        
+        max_dist = 10;
     else
-        
-        % Get last pxs
-        last_pxs = [link.comx, link.comy];
-        
+        max_dist = length(node.idx) - 1;
+    end
+    
+    % Get (x,y) coordinates of the segment
+    segment_pxs = zeros(length(node.idx), 2);
+    [segment_pxs(:,1), segment_pxs(:,2)] = ind2sub([Gout.w Gout.l], node.idx);
+
+    % Estimate the distance with respect to current node
+    distances = bsxfun(@minus, segment_pxs, [link.comx, link.comy]);
+    % Take the Euclidean distance
+    distances = sqrt(distances(:,1).^2 + distances(:,2).^2);
+    % Identify the smallest value
+    [~, idx] = min(distances);
+
+    % Get the mean coordinate
+    if idx==1
+        last_pxs = segment_pxs(idx+max_dist, :);
+    else
+        last_pxs = segment_pxs(end-max_dist, :);
     end
 
 end

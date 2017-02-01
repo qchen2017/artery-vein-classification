@@ -2,15 +2,15 @@
 function [Gout] = initializeGraphFromSkel_new(skel)
 
     % Compute the intersecting pts
-    intersecting_pts = find_skel_intersection(skel);
+    intersecting_pts = find_skel_intersection_2(skel);
 
     % Get indices
-    idx = sub2ind(size(skel), intersecting_pts(:,2), intersecting_pts(:,1));
+    %idx = sub2ind(size(skel), intersecting_pts(:,2), intersecting_pts(:,1));
 
     % Generate only branching points
     branching_points = false(size(skel));
-    branching_points(idx) = true;
-    dilated_branching_points = imdilate(branching_points, strel('disk',2,8));
+    branching_points(intersecting_pts) = true;
+    dilated_branching_points = branching_points;%imdilate(branching_points, strel('disk',3,8));
 
     % Generate identified junctions
     identified_junctions = skel .* dilated_branching_points;
@@ -102,9 +102,7 @@ function [Gout] = initializeGraphFromSkel_new(skel)
     last_node_idx = length(node);
     % for each node
     for i=1:length(node)
-        %if i==151
-        %    disp('A');
-        %end
+
         % find all the neighbors indices of all the pixels in the node
         link_idx = find(ismember(nhi(:,5),node(i).idx));
 
@@ -123,7 +121,6 @@ function [Gout] = initializeGraphFromSkel_new(skel)
 
             % for each pixel candidate
             for k=1:length(link_cands)
-                %k
                 % follow the link and obtain
                 % - edge: list of pixels of the edge
                 % - end_node_idx: id of the last node (-1 if it terminates without reaching a node)
@@ -266,15 +263,15 @@ function [edge, end_node_idx] = pk_follow_link(pixel_labels, nodesStructure, sou
                     end_node_idx = pixel_labels(nextCand)-1; % node #
                     isdone = 1;
                 else
-                    if ~isempty(find(nextCand==edge)) % <----------- EL PROBLEMA ANDA POR AC?
-                        edge(i) = canalCand;
-                        end_node_idx = -1;
-                        isdone = 1;
-                    else
+%                     if ~isempty(find(nextCand==edge)) % <----------- EL PROBLEMA ANDA POR AC?
+%                         edge(i) = canalCand;
+%                         end_node_idx = -1;
+%                         isdone = 1;
+%                     else
                         % then is not a node and is not in one of our cicles, then continue 
                         edge(i) = canalCand;
                         canalCand = nextCand;
-                    end
+%                     end
                 end;
             end
         else

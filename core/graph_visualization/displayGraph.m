@@ -34,7 +34,7 @@ function h = displayGraph(G, I)
                     if(G.node(i).conn(j)<1)
                         col='k';
                     else
-                        col='r';
+                        col='k';
                     end;
                 else
                     if (ismember(G.link(G.node(i).links(j)).n2, G.terminalNodes))
@@ -75,11 +75,11 @@ function h = displayGraph(G, I)
         if (draw_node==1)
             if (isfield(G,'terminalNodes')) && (ismember(i, G.terminalNodes))
                 plot(y1,x1,'o','MarkerSize',8,...
-                'MarkerFaceColor','c',...
+                'MarkerFaceColor','r',...
                 'Color','k');
             else
                 plot(y1,x1,'o','MarkerSize',8,...
-                'MarkerFaceColor','c',...
+                'MarkerFaceColor','r',...
                 'Color','k');
             end
         end

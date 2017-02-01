@@ -1,5 +1,5 @@
 
-function [Gout] = compute_unary_features(Gout, RGB)
+function [Gout] = compute_unary_features(Gout, RGB)%, segm)
 
     % UNARY FEATURES
     
@@ -15,6 +15,9 @@ function [Gout] = compute_unary_features(Gout, RGB)
     H = normalize_intensities(HSV(:,:,1));
     S = normalize_intensities(HSV(:,:,2));
     V = normalize_intensities(HSV(:,:,3));
+    
+    
+    % --------------------------------------
     
     
     % --------------------------------------
