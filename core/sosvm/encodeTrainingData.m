@@ -1,6 +1,8 @@
 
 function [patterns, labels] = encodeTrainingData(training_data) 
 
+    %training_data = training_data(1);
+
     % Preallocate arrays for patterns and labels
     patterns = cell(size(training_data));
     labels = cell(size(training_data));
@@ -47,6 +49,9 @@ function [unary_features, labels] = encode_unary_features_and_labels(Gout)
         end
         
     end
+    
+    % CAREFUL WITH THIS
+    %unary_features = cat(2, labels, ones(size(labels)));
     
     % Standardize unary features
     unary_features(:,1:end-1) = standardizeCols(unary_features(:,1:end-1), mean(unary_features(:,1:end-1)), std(unary_features(:,1:end-1)));

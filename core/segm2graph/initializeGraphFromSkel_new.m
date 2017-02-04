@@ -10,13 +10,12 @@ function [Gout] = initializeGraphFromSkel_new(skel)
     % Generate only branching points
     branching_points = false(size(skel));
     branching_points(intersecting_pts) = true;
-    dilated_branching_points = branching_points;%imdilate(branching_points, strel('disk',3,8));
 
     % Generate identified junctions
-    identified_junctions = skel .* dilated_branching_points;
+    identified_junctions = skel .* branching_points;
 
     % Remove junctions
-    skel_without_junctions = skel .* imcomplement(dilated_branching_points);
+    skel_without_junctions = skel .* imcomplement(branching_points);
 
     
     
@@ -132,7 +131,8 @@ function [Gout] = initializeGraphFromSkel_new(skel)
                     pixel_labels(edge(end))=0;
                 end; 
                 % only large branches or non-loops
-                if((end_node_idx<0 && length(edge)>1) || (i~=end_node_idx && end_node_idx>0))
+                if((end_node_idx<0 && length(edge)>3) || (i~=end_node_idx && end_node_idx>0))
+                    
                     % encode link information
                     link(last_link_idx).n1 = i;
                     link(last_link_idx).n2 = end_node_idx; % node number

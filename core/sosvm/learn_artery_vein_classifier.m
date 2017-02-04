@@ -52,7 +52,7 @@ function [model, performance_on_validation] = learn_artery_vein_classifier(train
     
     % plot the evolution of C values
     figure, plot(log10(C_space), accuracies_on_validation, 'LineWidth', 2);
-    ylim = [0 1];
+    ylim([0 1]);
     xlabel('$i = \log_{10}(C)$ values', 'Interpreter', 'LaTex');
     ylabel('Accuracy', 'Interpreter', 'LaTex');
     box on;
@@ -71,7 +71,7 @@ function [model] = learn_artery_vein_classifier_for_a_given_c(graphs, C, n)
     % -----------------------------------------------
     
     % Regularization parameter
-    config.C = C;
+    config.C = C;% / n;
     % Size of the weight vector:
     %
     % || psi || = || w_u || + || w_p ||
@@ -79,8 +79,13 @@ function [model] = learn_artery_vein_classifier_for_a_given_c(graphs, C, n)
     % where || w_u || is 2 x the number of unary features + 2 (for the bias
     %                 terms)
     %       || w_p || is the number of pairwise features
+    
     config.size_w_u = 2 * (graphs{1}.properties.unary_dim + 1);
     config.size_w_p = graphs{1}.properties.pairwise_dim;
+    
+    %config.size_w_u = 2 * (1 + 1);
+    %config.size_w_p = graphs{1}.properties.pairwise_dim * 4;
+    
     config.sizePsi = config.size_w_u + config.size_w_p;
     % No positivity constraints needed
     %config.posindx = [];

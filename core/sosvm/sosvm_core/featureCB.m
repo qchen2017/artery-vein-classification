@@ -16,6 +16,6 @@ function [phi] = featureCB(config, X, Y)
     
     % Concatenate both the unary and the pairwise features and sum for all
     % the nodes
-    phi = sparse(double(sum(cat(2, phi_u, phi_p))'));   
+    phi = sparse(double(sum(cat(2, phi_u, phi_p))'));% / length(Y);   
     
 end

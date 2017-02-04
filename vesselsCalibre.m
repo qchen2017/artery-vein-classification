@@ -1,130 +1,145 @@
-function [ G ] = vesselsCalibre(G, segm)
+function [ G ] = vesselsCalibre(G, RGB)
 
-    % compute the euclidean distance transform of the complement of the
-    % segmentation to capture a raw approximation to the vessel diameter
-    raw_diameters = bwdist(imcomplement(segm), 'euclidean')+1;
+    % Prepare auxiliar color planes
+    color_planes = zeros(size(RGB,1), size(RGB,2), 9);
+    
+    % RGB color image
+    color_planes(:,:,1) = normalize_intensities(RGB(:,:,1)); % red
+    color_planes(:,:,2) = normalize_intensities(RGB(:,:,2)); % green
+    color_planes(:,:,3) = normalize_intensities(RGB(:,:,3)); % blue
+    
+    % HSV color space
+    HSV = rgb2hsv(RGB);
+    color_planes(:,:,4) = normalize_intensities(HSV(:,:,1)); % hue
+    color_planes(:,:,5) = normalize_intensities(HSV(:,:,2)); % saturation
+    color_planes(:,:,6) = normalize_intensities(HSV(:,:,3)); % value
+    
+    % Equalize intensities
+    color_planes(:,:,7:9) = normalize_intensities(contrastEqualization(RGB));
     
     displacement = 3; % to compute vessel normals
-    sample_factor = 2; % to sample some normals
+    num_profiles = 10; % to sample some normals
+    profile_size = 5;
     
-    figure, imshow(segm);
-    hold on
+%     figure, imshow(RGB);
+%     hold on
     
-    % compute vessel Calibre for each link
-    for i = 1 : length(G.link)
+    
+    % Compute intensity profile
+    for i = 1 : length(G.node)
 
-        % if we have more than only 2 points to consider
-        if (G.link(i).point  > 2 * displacement)
+        sample_factor = floor(length(G.node(i).idx) / num_profiles);
+        if (sample_factor < 1)
+            sample_factor = 1;
+        end
         
-            % en pts guardo todas las coordenadas de los puntos del link
-            pts = zeros(length(G.link(i).point),2);
-            [pts(:,1), pts(:,2)] = ind2sub([G.w G.l], G.link(i).point);
-            % en next_pts tengo las mismas coordenadas, pero desplazadas de
-            % acuerdo al valor de displacement
-            next_pts = circshift(pts',[0 -displacement])'; 
-            % en vector_norm tengo el di?metro estimado, aproximado a
-            % partir del m?ximo de la transformada de distancia en el
-            % segmento
-            vector_norm = ceil(max(raw_diameters(G.link(i).point)));
-            
-            % elimino las puntas, que me quedan cruzadas
-            pts = pts(displacement:end-displacement,:);
-            next_pts = next_pts(displacement:end-displacement,:);
+        % identify points in the segment
+        pts = zeros(length(G.node(i).idx),2);
+        [pts(:,1), pts(:,2)] = ind2sub([G.w G.l], G.node(i).idx);
+        % en next_pts tengo las mismas coordenadas, pero desplazadas de
+        % acuerdo al valor de displacement
+        next_pts = circshift(pts',[0 -displacement])'; 
+        % by default, we capture the profile size
+        vector_norm = profile_size;
 
-            % muestreo el esqueleto cada 2 puntos
-            v_sampled = next_pts(mod(1:length(pts),sample_factor)==1,:) - pts(mod(1:length(pts),sample_factor)==1,:);
-            if (size(v_sampled,1) < 3)
-                v_sampled = next_pts - pts;
-            else
-                pts = pts(mod(1:length(pts),sample_factor)==1,:);
-                next_pts = next_pts(mod(1:length(next_pts),sample_factor)==1,:);
-            end
-            
-            % calculo los vectores perpendiculares al esqueleto
-            norm_ = ones(size(v_sampled,1),1) * vector_norm;
-            u_sampled = zeros(size(v_sampled));
-            u_sampled(:,1) = norm_ ./ sqrt(1 + (v_sampled(:,1) ./ v_sampled(:,2)).^2);
-            u_sampled(:,2) = -1 * (v_sampled(:,1) ./ v_sampled(:,2)) .* u_sampled(:,1);
+        % we remove the points in each corner to avoid wrong normals
+        pts = pts(displacement:end-displacement,:);
+        next_pts = next_pts(displacement:end-displacement,:);
 
-            % en caso de que haya alg?n delta_y=0, se corrige:
-            u_sampled(v_sampled(:,1)==0, 2) = 0;
-            u_sampled(v_sampled(:,2)==0, 2) = vector_norm;
+        % in case we want less than n profiles we can use sample_factor
+        % to recover n/sample_factor elements
+        v_sampled = next_pts(mod(1:length(pts),sample_factor)==1,:) - pts(mod(1:length(pts),sample_factor)==1,:);
+        if (size(v_sampled,1) < 3)
+            v_sampled = next_pts - pts;
+        else
+            pts = pts(mod(1:length(pts),sample_factor)==1,:);
+            next_pts = next_pts(mod(1:length(next_pts),sample_factor)==1,:);
+        end
+
+        % compute vectors orthogonal to the skeleton
+        norm_ = ones(size(v_sampled,1),1) * vector_norm;
+        u_sampled = zeros(size(v_sampled));
+        u_sampled(:,1) = norm_ ./ sqrt(1 + (v_sampled(:,1) ./ v_sampled(:,2)).^2);
+        u_sampled(:,2) = -1 * (v_sampled(:,1) ./ v_sampled(:,2)) .* u_sampled(:,1);
+
+        % en caso de que haya alg?n delta_y=0, se corrige:
+        u_sampled(v_sampled(:,1)==0, 2) = 0;
+        u_sampled(v_sampled(:,2)==0, 2) = vector_norm;
+
+        % calculo los puntos ortogonales al actual
+        orthogonal_a = round(pts + u_sampled);
+        orthogonal_b = round(pts - u_sampled);
+
+%         quiver(pts(:,2), pts(:,1), u_sampled(:,2), u_sampled(:,1), 'color', [1 1 1]);
+%         hold on
+%         quiver(pts(:,2), pts(:,1), -u_sampled(:,2), -u_sampled(:,1), 'color', [1 1 1]);
+%         hold on
+
+        G.node(i).features = [];
+        
+        % For each color plane
+        for color_idx = 1 : size(color_planes, 3)
+        
+            % initialize an array for each intensity profile
+            current_profiles = zeros(size(u_sampled, 1), profile_size * 2 + 1);
             
-            % calculo los puntos ortogonales al actual
-            orthogonal_a = round(pts + u_sampled);
-            orthogonal_b = round(pts - u_sampled);
-            
-            quiver(pts(:,2), pts(:,1), u_sampled(:,2), u_sampled(:,1));
-            hold on
-            quiver(pts(:,2), pts(:,1), -u_sampled(:,2), -u_sampled(:,1));
-            hold on
-            
-            % identifico los puntos dentro del vaso
-            G.link(i).vessel_width = zeros(size(orthogonal_a,1),1);
+            % for each profile
             for j = 1 : size(orthogonal_a,1)
-                
-                % obtengo las etiquetas en el vector normal
-                [line] = improfile(segm, [orthogonal_a(j,2) orthogonal_b(j,2)], [orthogonal_a(j,1) orthogonal_b(j,1)], double(vector_norm*2+1));
-                % el centerline est? localizado en el punto vector_norm+1.
-                % usando esa informaci?n, puedo identificar d?nde empieza y
-                % donde termina
-                line_idx = find(line==0) - (vector_norm+1);
-                try
-                    neg = line_idx(line_idx<0);
-                    if (isempty(neg)), a = vector_norm+1; else a = find(max(neg)==line_idx); end
-                    pos = line_idx(line_idx>0);
-                    if (isempty(pos)), b = vector_norm+1; else b = find(min(pos)==line_idx); end
-                catch ex
-                    disp('A');
-                end
-                G.link(i).vessel_width(j) = abs(a-b)+1;
-                %length(line)
-                
+                % recover each profile
+                current_profiles(j,:) = improfile(color_planes(:,:,color_idx), [orthogonal_a(j,2) orthogonal_b(j,2)], [orthogonal_a(j,1) orthogonal_b(j,1)], double(vector_norm*2+1));
             end
-            mean(G.link(i).vessel_width)
-            % calculo el ancho como la distancia euclidea entre el primer
-            % punto marcado con 1 en cada recta
-%             for j = 1 : size(orthogonal_b,1)
-%                 
-%                 % identify pixels inside the vessel
-%                 [cx cy line] = improfile(segm, [orthogonal_a(j,1) orthogonal_b(j,1)], [orthogonal_a(j,2) orthogonal_b(j,2)]);
-%                 
-%                 % identify the closest edge to the centerline
-%                 vessel_pixels = (find(line==1) - 51);
-%                 first_piece = find(vessel_pixels < 0);
-%                 if (~isempty(first_piece))
-%                     [~, idx_begin] = max(first_piece);
-%                 else
-%                     idx_begin = 51;
-%                 end
-%                 last_piece = find(vessel_pixels < 0);
-%                 if (~isempty(last_piece))
-%                     [~, idx_end] = min(last_piece);
-%                 else
-%                     idx_end = 51;
-%                 end
-%                 
-%                 
-%                 
-%                 
-%                 line = find(1-segm(sub2ind([G.w G.l], x, y)));
-%                 first_point = ind2sub([G.w G.l], line(1));
-%                 
-%                 [x, y]=bresenham(pts(j,1),pts(j,2),orthogonal_a(j,1),orthogonal_a(j,2));
-%                 line = find(1-segm(sub2ind([G.w G.l], x, y)));
-%                 end_point = ind2sub([G.w G.l], line(1));
-%                 
-%             end     
-            
-        end   
-    end
+            % get mean profile and assign to features
+            G.node(i).features = cat(1, G.node(i).features, mean(current_profiles));
 
-% 
-% 
+%             figure, plot(current_profiles', '--or');
+%             ylim([-1 1]);
+%             hold on
+%             plot(mean(current_profiles)', 'LineWidth', 3);
+%             grid on
+            
+        end
+    end
 
 end    
     
     
+function output_I = normalize_intensities(I)
+    % initialize the output parameter
+    output_I = zeros(size(I));
+    for i = 1 : size(I, 3)
+        % turn the image into doubles
+        current_band = im2double(I(:,:,i));
+        % and now standardize
+        output_I(:,:,i) = (current_band - mean(current_band(:))) / std(current_band(:));
+    end
+end
 
 
+
+function [I_out] = contrastEqualization(I)
+
+    % get mask
+    mask = get_fov_mask(I, 0.5);
+    
+    % initialize the new image
+    I_out = uint8(zeros(size(I)));
+    w = floor(3*(size(I,1))/30);
+    
+    % for each color plane
+    for i = 1 : size(I,3)
+        
+        % fakepad current color band
+        [I_extended, mask_extended] = fakepad(I(:,:,i), mask, 5, w);
+        % apply gaussian filter
+        G = imfilter(I_extended, fspecial('gaussian', [w, w], (size(I,1))/30));
+        % rebuild image
+        I_extended = 4 * double(I_extended) - 4 * double(G) + 128;
+        % rebuild current color band
+        I_current = zeros(size(I(:,:,i)));
+        I_current(mask) = I_extended(mask_extended>0);
+        % assign current band to the new image
+        I_out(:,:,i) = uint8(I_current);
+        
+    end
+end
 
