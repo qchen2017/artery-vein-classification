@@ -1,8 +1,6 @@
 
 function [patterns, labels] = encodeTrainingData(training_data) 
 
-    %training_data = training_data(1);
-
     % Preallocate arrays for patterns and labels
     patterns = cell(size(training_data));
     labels = cell(size(training_data));

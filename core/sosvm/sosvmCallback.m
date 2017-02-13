@@ -30,7 +30,7 @@ function [model, config] = sosvmCallback(config, training_data)
     config.constraintFn = @findMostViolatedConstraint;
     config.featureFn = @featureComputing;
     config.dimension = config.sizePsi;
-    args = [' -c ', num2str(single(config.C)), ' -o 2 -v 1 -w 4'] ;
+    args = [' -c ', num2str(single(config.C)), ' -o 2 -v 3 -e 0.0001 -w 4 -# 5000'] ;
     model = svm_struct_learn(args, config) ;
     
 end

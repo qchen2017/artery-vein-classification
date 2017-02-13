@@ -48,7 +48,7 @@ function [data] = prepare_graphs(data_folder, is_training)
             [Gout] = generateGraphOfSegments(G_crossings);
 
             % Extract unary features
-            [Gout] = compute_unary_features(Gout, I);
+            [Gout] = compute_unary_features(Gout, I, segm);
             % Extract pairwise features
             [Gout] = compute_pairwise_features(Gout, segm);
 
