@@ -24,12 +24,13 @@ zip_filename = fullfile(output_folder, 'Tree_topology_PAMI_2015.zip');
 % check if the file exists
 if exist(zip_filename, 'file')==0
     % download the data set
-    fprintf('Downloading Tree_topology_PAMI_2015.zip data');
+    fprintf('Downloading Tree_topology_PAMI_2015.zip data\n');
     zip_filename = websave(fullfile(output_folder, 'Tree_topology_PAMI_2015.zip'), ...
         'http://www.duke.edu/~sf59/Datasets/Tree_topology_PAMI_2015.zip');
 end
 
 % unzip on output_folder/tmp
+fprintf('Done! Unpacking...\n');
 unzip(zip_filename, fullfile(output_folder, 'tmp'));
 
 % remove RICE and SKETCH because we don't care about those two sets
@@ -53,6 +54,7 @@ graph_filenames = dir(fullfile(input_folder, '*.mat'));
 graph_filenames = {graph_filenames.name};
 
 % for each graph file
+fprintf('Done! Organizing data...\n');
 for i = 1 : length(graph_filenames)
     
     % load current graph
@@ -65,4 +67,8 @@ for i = 1 : length(graph_filenames)
 end
 
 %% delete tmp folder
+fprintf('Done! Removing useless files...\n');
 rmdir(fullfile(output_folder, 'tmp'), 's');
+if exist(zip_filename, 'file') ~= 0
+    delete(zip_filename);
+end
