@@ -160,6 +160,9 @@ end
 % is an initial branchit point if it has only 2 links
 function it_is = is_an_initial_branching_point(node)
     it_is = length(node.conn)==2;
+    if unique(node.conn) < length(node.conn)
+        disp('A');
+    end
 end
 
 % is a traditional branching point if it is connected to 3 nodes

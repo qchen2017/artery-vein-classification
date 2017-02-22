@@ -67,8 +67,12 @@ function [Gout] = compute_pairwise_features(Gout, segm)
     % Assign vessel calibres and angles
     % ---------------------------------------------------------------------
     
+    is_a_branching_point_list = zeros(length(Gout.link), 1);
+    
     % For each link in the graph
     for i = 1 : length(Gout.link)
+        
+        is_a_branching_point_list(i) = Gout.link(i).is_branching_point;
         
         % Initialize current feature vector
         current_features = zeros(3, 1);

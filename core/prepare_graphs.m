@@ -1,5 +1,5 @@
 
-function [data] = prepare_graphs(data_folder, is_training)
+function [data, computational_cost] = prepare_graphs(data_folder, is_training)
 
     % Prepare paths
     images_folder = fullfile(data_folder, 'images'); % images
@@ -8,6 +8,9 @@ function [data] = prepare_graphs(data_folder, is_training)
     if is_training
         labels_folder = fullfile(data_folder, 'labels'); % labels
     end
+    
+    % Initialize the array of times
+    computational_cost = zeros(length(images_folder), 4);
 
     % Retrieve filenames
     images_filenames = getMultipleImagesFileNames(images_folder); % images
@@ -43,14 +46,22 @@ function [data] = prepare_graphs(data_folder, is_training)
 
             % Extract the graph
             % Generate graph of crossings
+            tic
             [G_crossings] = initializeGraphFromSkel_new(skel);
+            computational_cost(i, 1) = toc;
             % And now transform the graph of crossings into a graph of segments
+            tic
             [Gout] = generateGraphOfSegments(G_crossings);
-
+            computational_cost(i, 2) = toc;
+            
             % Extract unary features
+            tic
             [Gout] = compute_unary_features(Gout, I, segm);
+            computational_cost(i, 3) = toc;
             % Extract pairwise features
+            tic
             [Gout] = compute_pairwise_features(Gout, segm);
+            computational_cost(i, 4) = toc;
 
             % Assign labels to the graph if it is a training set
             if is_training
