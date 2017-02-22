@@ -25,7 +25,7 @@ if exist(zip_filename, 'file') ~= 0
     % unzip on output_folder/tmp
     unzip(zip_filename, fullfile(output_folder, 'tmp'));
 else
-    throw('File not found');
+    error(['File ', zip_filename, ' not found']);
 end
 
 %% generate the input data set

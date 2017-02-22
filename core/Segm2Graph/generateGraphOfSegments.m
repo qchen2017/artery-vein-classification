@@ -160,14 +160,22 @@ end
 % is an initial branchit point if it has only 2 links
 function it_is = is_an_initial_branching_point(node)
     it_is = length(node.conn)==2;
-    if unique(node.conn) < length(node.conn)
-        disp('A');
+    if (unique(node.conn) < length(node.conn))
+        if unique(node.conn) ~= -1
+            disp('A');
+        end
     end
 end
 
 % is a traditional branching point if it is connected to 3 nodes
 function it_is = is_a_branching_point(node)
     it_is = length(node.conn)==3;
+    if (unique(node.conn) < length(node.conn))
+        my_cicles = node.conn(node.conn ~= -1);
+        if length(unique(my_cicles)) < length(my_cicles)
+            disp('A');
+        end
+    end
 end
 
 % is a crossing if it is connected to 4 different nodes
