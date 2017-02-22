@@ -32,6 +32,7 @@ end
 
 subsets = {'training', 'test'};
 
+fprintf('Done! Organizing data...\n');
 for subs_ = 1 : length(subsets)
     
     % get current set
@@ -90,4 +91,5 @@ for subs_ = 1 : length(subsets)
 end
 
 %% delete tmp folder
+fprintf('Done!\n');
 rmdir(fullfile(output_folder, 'tmp'), 's');
