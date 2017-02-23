@@ -10,12 +10,12 @@ function [model, performance_on_validation] = learn_artery_vein_classifier(train
     % number of segments on the training set
     n = 0;
     for i = 1 : length(training_data)
-        n = n + length(training_data{i}.node);
+        n = n + length(find(training_data{i}.all_my_labels));
     end
     % and the validation set
     n_val = 0;
     for i = 1 : length(validation_data)
-        n_val = n_val + length(validation_data{i}.node);
+        n_val = n_val + length(find(validation_data{i}.all_my_labels));
     end
     
     % initialize an array of accuracies on the validation set
@@ -32,16 +32,37 @@ function [model, performance_on_validation] = learn_artery_vein_classifier(train
         [learned_models{c_idx}] = learn_artery_vein_classifier_for_a_given_c(training_data, C_space(c_idx), n);
         % apply model on validation data
         results = cell(size(validation_data));
+        
         correctly_classified_samples = 0;
+        
         for j = 1 : length(validation_data)
+            
             % Classify arteries and veins
             results{j} = classify_arteries_and_veins(validation_data{j}, learned_models{c_idx});
-            % Evaluate accuracy
-            correctly_classified_samples = correctly_classified_samples + ...
-                evaluate_artery_vein_classification_performance(results{j}, validation_data{j}, evaluation_metric);
+
+            correctly_classified_samples = correctly_classified_samples + evaluate_artery_vein_classification_performance(results{j}, validation_data{j}, evaluation_metric);
+            
+%             if (j==1)
+%                 figure
+%                 
+%                 subplot(1, 2, 1);
+%                 [II] = generate_image_from_classified_graph(results{j});
+%                 imshow(II)
+%                 title('our algorithm')
+%                 
+%                 subplot(1, 2, 2);
+%                 [II] = generate_image_from_classified_graph(validation_data{j});
+%                 imshow(II)
+%                 title('ground truth')
+%             end
+            
         end
         % evaluate this model on the validation set
         accuracies_on_validation(c_idx) = correctly_classified_samples / n_val; 
+        
+        %accuracies_on_validation(c_idx) = ...
+        %    evaluate_artery_vein_classification_performance(all_classified_labels, all_ground_truth_labels, evaluation_metric);
+        
         
         fprintf('\nAccuracy on validation: %d\n\n', accuracies_on_validation(c_idx));
         

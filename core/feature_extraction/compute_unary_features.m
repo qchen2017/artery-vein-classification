@@ -17,7 +17,7 @@ end
 function [Gout] = compute_unary_features_profiles_statistics(Gout, RGB, segm)
 
     % Prepare auxiliar color planes
-    color_planes = zeros(size(RGB,1), size(RGB,2), 9);
+    color_planes = zeros(size(RGB,1), size(RGB,2), 5);
     
     % RGB color image
     color_planes(:,:,1) = normalize_intensities(RGB(:,:,1)); % red
