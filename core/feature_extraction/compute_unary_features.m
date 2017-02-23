@@ -17,7 +17,7 @@ end
 function [Gout] = compute_unary_features_profiles_statistics(Gout, RGB, segm)
 
     % Prepare auxiliar color planes
-    color_planes = zeros(size(RGB,1), size(RGB,2), 5);
+    color_planes = zeros(size(RGB,1), size(RGB,2), 9);
     
     % RGB color image
     color_planes(:,:,1) = normalize_intensities(RGB(:,:,1)); % red
@@ -36,8 +36,8 @@ function [Gout] = compute_unary_features_profiles_statistics(Gout, RGB, segm)
     num_profiles = 10; % to sample some normals
     profile_size = 5;
     
-%     figure, imshow(RGB);
-%     hold on
+    figure, imshow(color_planes(:,:,7:9));
+    hold on
     
     
     % Compute intensity profile
@@ -90,10 +90,10 @@ function [Gout] = compute_unary_features_profiles_statistics(Gout, RGB, segm)
         orthogonal_a = round(pts + u_sampled);
         orthogonal_b = round(pts - u_sampled);
 
-%         quiver(pts(:,2), pts(:,1), u_sampled(:,2), u_sampled(:,1), 'color', [1 1 1]);
-%         hold on
-%         quiver(pts(:,2), pts(:,1), -u_sampled(:,2), -u_sampled(:,1), 'color', [1 1 1]);
-%         hold on
+        quiver(pts(:,2), pts(:,1), u_sampled(:,2), u_sampled(:,1), 'color', [1 1 1]);
+        hold on
+        quiver(pts(:,2), pts(:,1), -u_sampled(:,2), -u_sampled(:,1), 'color', [1 1 1]);
+        hold on
 
         Gout.node(i).features = [];
         
